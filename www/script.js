@@ -1783,52 +1783,23 @@ function renderPythonPlayground(key, starterCode) {
 // ---------- JavaScript execution via a sandboxed Web Worker (real JS, runs natively in
 // the browser - no external service or WASM engine needed at all, unlike C#/Python). A
 // worker keeps a runaway loop from freezing the page, and gets terminated after a timeout
-// instead of pretending nothing went wrong. ----------
+// instead of pretending nothing went wrong. Loaded from a real file (js-sandbox-worker.js),
+// not a Blob URL - Android's WebView (what the native Android app runs inside) blocks or
+// silently fails Worker creation from blob: URLs in some configurations; a real static
+// file sidesteps that entirely and behaves identically everywhere else too. ----------
 function runJS(code) {
   return new Promise((resolve) => {
     let settled = false;
-    const workerSrc = `
-      const _logs = [];
-      const _fmt = (a) => {
-        if (a === undefined) return "undefined";
-        if (a === null) return "null";
-        if (typeof a === "string") return a;
-        if (a instanceof Error) return a.message;
-        if (a instanceof Map) return JSON.stringify(Object.fromEntries(a), null, 2);
-        if (a instanceof Set) return JSON.stringify([...a], null, 2);
-        try { return JSON.stringify(a, null, 2); } catch (e) { return String(a); }
-      };
-      self.console = {
-        log: (...args) => _logs.push(args.map(_fmt).join(" ")),
-        error: (...args) => _logs.push(args.map(_fmt).join(" ")),
-        warn: (...args) => _logs.push(args.map(_fmt).join(" ")),
-        info: (...args) => _logs.push(args.map(_fmt).join(" ")),
-      };
-      const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
-      self.onmessage = async (e) => {
-        try {
-          const run = new AsyncFunction(e.data);
-          await run();
-          self.postMessage({ output: _logs.join("\\n"), error: null });
-        } catch (err) {
-          self.postMessage({ output: _logs.join("\\n"), error: err.message });
-        }
-      };
-    `;
-    const blob = new Blob([workerSrc], { type: "application/javascript" });
-    const url = URL.createObjectURL(blob);
     let worker;
     try {
-      worker = new Worker(url);
+      worker = new Worker("js-sandbox-worker.js");
     } catch (e) {
-      URL.revokeObjectURL(url);
       resolve({ output: "", error: "Couldn't start the JavaScript engine in this browser: " + e.message });
       return;
     }
 
     const cleanup = () => {
       worker.terminate();
-      URL.revokeObjectURL(url);
     };
 
     const timeout = setTimeout(() => {

@@ -8,7 +8,7 @@
 // CACHE_VERSION is tied to the same ?v= number used elsewhere in this
 // project (see index.html) - bump it on every deploy, same as those, and
 // old caches get cleaned up automatically on the next visit.
-const CACHE_VERSION = "v31";
+const CACHE_VERSION = "v32";
 const CACHE_NAME = `query-academy-${CACHE_VERSION}`;
 
 const APP_SHELL = [
@@ -16,6 +16,7 @@ const APP_SHELL = [
   "./index.html",
   "./style.css",
   "./script.js",
+  "./js-sandbox-worker.js",
   "./data.js",
   "./manifest.json",
   "./csharp-content-entry.js",
