@@ -1,0 +1,905 @@
+:root {
+  /* Light UI palette (main page) */
+  --bg: #f6f8fb;
+  --panel: #ffffff;
+  --panel2: #eef2f8;
+  --line: #dfe6f0;
+  --text: #10192b;
+  --sub: #57678a;
+  --cyan: #0b8a82;
+  --amber: #a15a06;
+  --magenta: #a5135c;
+  --green: #157f3c;
+  --red: #c22b2b;
+
+  /* Dark "terminal" palette, used only for code/query/chart panels */
+  --dk-bg: #080c14;
+  --dk-panel: #0f1626;
+  --dk-panel2: #131c31;
+  --dk-line: #263455;
+  --dk-text: #e7ecf7;
+  --dk-sub: #93a3c4;
+  --dk-cyan: #3fe0d0;
+  --dk-amber: #ffb84d;
+  --dk-green: #5be38b;
+  --dk-magenta: #ff6fa5;
+  --dk-red: #ff8080;
+
+  --blue: #2563a8;
+
+  --font-display: "Space Grotesk", "Segoe UI", sans-serif;
+  --font-body: "Inter", "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", monospace;
+
+  /* Shape scale (locked): large containers 14px, controls 8-10px, pills full-radius. Do not introduce a fourth value. */
+  --radius-lg: 14px;
+  --radius-md: 10px;
+  --radius-sm: 8px;
+
+  --shadow-card: 0 1px 2px rgba(16, 25, 43, 0.05);
+  --shadow-card-hover: 0 10px 24px rgba(16, 25, 43, 0.09);
+  --shadow-float: 0 16px 40px rgba(16, 25, 43, 0.14);
+
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ---- Dark theme: same page chrome tokens, swapped. The dark "terminal" panels (--dk-*)
+   stay as they are in both modes, so they keep reading as embedded windows rather than
+   blending into the page once the page itself goes dark. ---- */
+html[data-theme="dark"] {
+  --bg: #0d1220;
+  --panel: #141b2e;
+  --panel2: #1a2338;
+  --line: #2a3552;
+  --text: #eef1f8;
+  --sub: #93a1c2;
+  --blue: #5b9bdc;
+
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-card-hover: 0 10px 26px rgba(0, 0, 0, 0.5);
+  --shadow-float: 0 20px 50px rgba(0, 0, 0, 0.55);
+}
+
+/* View Transitions API: disable the browser's default cross-fade so our own
+   circular wipe (triggered from script.js) is the only motion that plays. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+* { box-sizing: border-box; }
+
+html, body, #app {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  transition: background-color 0.4s var(--ease), color 0.4s var(--ease);
+}
+
+button { font-family: inherit; }
+textarea, input { font-family: inherit; }
+::selection { background: var(--cyan); color: #ffffff; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
+
+button:focus-visible, input:focus-visible, textarea:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 2px;
+}
+
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.gap-1 { gap: 4px; }
+.gap-2 { gap: 8px; }
+.gap-3 { gap: 12px; }
+.gap-4 { gap: 16px; }
+.gap-6 { gap: 24px; }
+
+.grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+
+@media (min-width: 640px) {
+  .grid-sm-2 { grid-template-columns: repeat(2, 1fr); }
+}
+@media (min-width: 768px) {
+  .grid-md-3 { grid-template-columns: repeat(3, 1fr); }
+  .grid-md-sidebar { grid-template-columns: 220px 1fr; }
+}
+/* Prevents grid children from overflowing their column (the bug that caused
+   overlapping text) — grid items default to min-width:auto, which lets long
+   unbroken text push past the column boundary. */
+.grid > * { min-width: 0; }
+
+.app-shell { min-height: 100vh; }
+
+.topnav {
+  padding: 15px 28px;
+  border-bottom: 1px solid var(--line);
+  background: var(--panel);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+.brand { cursor: pointer; transition: opacity 0.15s var(--ease); }
+.brand:hover { opacity: 0.75; }
+.brand-text { font-family: var(--font-display); font-weight: 700; font-size: 18px; letter-spacing: 0.3px; color: var(--text); }
+
+.theme-toggle {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: var(--panel2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: border-color 0.15s var(--ease), transform 0.15s var(--ease);
+}
+.theme-toggle:hover { border-color: var(--amber); }
+.theme-toggle:active { transform: scale(0.92); }
+
+.pill {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  border: 1px solid;
+  padding: 3px 9px;
+  border-radius: 999px;
+  text-transform: uppercase;
+  display: inline-block;
+}
+
+.page-wrap { max-width: 1160px; margin: 0 auto; padding: 48px 24px 72px; }
+
+/* ---- Hero: asymmetric split. Copy on the left, a real running mini playground on the right
+   (same engine and markup as the in-lesson playgrounds - not a fake screenshot). ---- */
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 32px;
+  align-items: center;
+  margin-bottom: 56px;
+  padding-top: 8px;
+}
+@media (min-width: 900px) {
+  .hero-grid { grid-template-columns: 1.05fr 0.95fr; gap: 48px; }
+}
+
+.hero-copy { max-width: 560px; }
+.hero-title {
+  font-family: var(--font-display);
+  font-size: clamp(32px, 4.4vw, 46px);
+  line-height: 1.12;
+  letter-spacing: -0.01em;
+  margin: 18px 0 14px;
+  font-weight: 700;
+  color: var(--text);
+}
+.hero-sub { color: var(--sub); font-size: 15.5px; line-height: 1.65; max-width: 46ch; }
+
+.hero-demo-wrap { position: relative; }
+.hero-demo-tag {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--dk-cyan);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.hero-demo-tag .live-dot {
+  width: 6px; height: 6px; border-radius: 50%; background: var(--dk-cyan);
+  animation: pulse-dot 2s var(--ease) infinite;
+}
+@keyframes pulse-dot { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+
+.hero-demo-wrap .playground-panel {
+  margin-bottom: 0;
+  box-shadow: var(--shadow-float);
+  transform: rotate(-0.4deg);
+}
+
+/* Section header: plain and functional, no numbered eyebrow (that pattern was retired). */
+.catalog-heading-row { margin-bottom: 22px; }
+.catalog-heading {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 4px;
+}
+.catalog-subheading { color: var(--sub); font-size: 13.5px; }
+
+/* Used for in-lesson progress indicators ("03 · lesson", "05 · practice") - a real
+   position marker inside a sequence, not a decorative marketing eyebrow, so it stays. */
+.section-label { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+.mono-label { font-family: var(--font-mono); color: var(--sub); font-size: 12px; white-space: nowrap; }
+.rule { height: 1px; flex: 1; background: var(--line); min-width: 12px; }
+
+.course-card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: 22px 22px 22px 20px;
+  position: relative;
+  box-shadow: var(--shadow-card);
+  transition: box-shadow 0.25s var(--ease), transform 0.25s var(--ease), border-color 0.25s var(--ease);
+  opacity: 0;
+  animation: card-in 0.5s var(--ease) forwards;
+}
+/* Stagger the entrance across the grid; a fixed small delay ladder, not a perpetual loop. */
+.course-card:nth-child(1) { animation-delay: 0.02s; }
+.course-card:nth-child(2) { animation-delay: 0.06s; }
+.course-card:nth-child(3) { animation-delay: 0.1s; }
+.course-card:nth-child(4) { animation-delay: 0.14s; }
+.course-card:nth-child(5) { animation-delay: 0.18s; }
+.course-card:nth-child(6) { animation-delay: 0.22s; }
+.course-card:nth-child(7) { animation-delay: 0.26s; }
+.course-card:nth-child(8) { animation-delay: 0.3s; }
+@keyframes card-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+.course-card.active { cursor: pointer; }
+.course-card.active:hover { box-shadow: var(--shadow-card-hover); transform: translateY(-2px); border-left-color: var(--card-accent, var(--line)); }
+.course-card.active:active { transform: translateY(0) scale(0.99); }
+.course-card.locked { opacity: 0.6; }
+
+.course-card-top { margin-bottom: 14px; }
+.course-icon { width: 38px; height: 38px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.course-title { font-family: var(--font-display); font-size: 18px; font-weight: 700; margin-bottom: 4px; color: var(--text); }
+.course-tagline { color: var(--sub); font-size: 13px; }
+.course-start { display: flex; align-items: center; gap: 4px; margin-top: 14px; font-family: var(--font-mono); font-size: 12px; }
+
+.badge-recommended {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--green);
+  background: rgba(21,127,60,0.08);
+  border: 1px solid rgba(21,127,60,0.3);
+  padding: 2px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.back-link { color: var(--sub); font-family: var(--font-mono); font-size: 12px; cursor: pointer; margin-bottom: 6px; display: inline-block; }
+.course-page-title { font-family: var(--font-display); font-size: 32px; font-weight: 700; margin-bottom: 24px; color: var(--text); }
+
+.level-tabs { margin-bottom: 18px; flex-wrap: wrap; }
+.level-tab {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  padding: 9px 18px;
+  border-radius: 10px;
+  border: 1.5px solid var(--line);
+  background: var(--panel);
+  color: var(--sub);
+  cursor: pointer;
+}
+.level-tab.active { border-color: var(--magenta); background: rgba(165,19,92,0.08); color: var(--magenta); }
+
+.track-tabs { margin-bottom: 28px; flex-wrap: wrap; }
+.track-tab {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--sub);
+  cursor: pointer;
+}
+.track-tab.active { border-color: var(--cyan); background: rgba(11,138,130,0.08); color: var(--cyan); }
+
+.locked-panel { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 40px; text-align: center; color: var(--sub); }
+.locked-title { font-family: var(--font-display); font-size: 18px; color: var(--text); margin-bottom: 6px; }
+.locked-sub { font-size: 13px; }
+
+/* ---- Lesson nav (sidebar) — overflow bug fix lives here ---- */
+.lesson-nav { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; }
+@media (min-width: 768px) {
+  .lesson-nav { flex-direction: column; overflow-x: visible; padding-bottom: 0; }
+}
+.lesson-nav-item {
+  text-align: left;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.4;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--sub);
+  cursor: pointer;
+  white-space: normal;        /* was "nowrap" — that caused text to overflow the column and overlap the lesson content */
+  word-break: break-word;
+  flex-shrink: 0;
+}
+@media (max-width: 767px) {
+  .lesson-nav-item { min-width: 220px; }
+}
+@media (min-width: 768px) {
+  .lesson-nav-item { width: 100%; }
+}
+.lesson-nav-item.active { border-color: var(--cyan); background: rgba(11,138,130,0.08); color: var(--cyan); }
+.lesson-nav-item.practice.active { border-color: var(--amber); background: rgba(161,90,6,0.08); color: var(--amber); }
+
+.lesson-title { font-family: var(--font-display); font-size: 24px; font-weight: 700; margin-bottom: 12px; color: var(--text); }
+.lesson-body { color: var(--sub); line-height: 1.7; margin-bottom: 20px; font-size: 14px; }
+.visual-panel { background: var(--dk-bg); border: 1px solid var(--dk-line); border-radius: 14px; padding: 20px; margin-bottom: 20px; }
+
+.run-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--cyan); color: #ffffff; font-family: var(--font-display); font-weight: 700;
+  padding: 9px 20px; border-radius: var(--radius-sm); border: none; cursor: pointer; margin-top: 10px;
+  transition: transform 0.15s var(--ease), box-shadow 0.15s var(--ease);
+}
+.run-btn:hover:not(:disabled) { box-shadow: 0 4px 14px rgba(11,138,130,0.3); }
+.run-btn:active:not(:disabled) { transform: translateY(1px) scale(0.98); }
+.run-btn:disabled { opacity: 0.6; cursor: default; }
+
+/* ---- Dark "terminal" panels: playground, code, charts ---- */
+.playground-panel { background: var(--dk-panel); border: 1px solid var(--dk-line); border-radius: 14px; overflow: hidden; margin-bottom: 20px; }
+.playground-header { padding: 10px 16px; background: var(--dk-panel2); border-bottom: 1px solid var(--dk-line); }
+.playground-header .mono-label { color: var(--dk-sub); }
+.sql-input {
+  width: 100%; background: #050810; color: var(--dk-green); font-family: var(--font-mono); font-size: 13px;
+  border: 1px solid var(--dk-line); border-radius: 8px; padding: 12px; resize: vertical;
+}
+/* CodeMirror upgrades the plain textareas above into real code editors -
+   these rules make the CodeMirror wrapper match the same dark terminal
+   panel look instead of CodeMirror's own default box styling. */
+.CodeMirror {
+  border: 1px solid var(--dk-line); border-radius: 8px; height: auto;
+  font-family: var(--font-mono); font-size: 13px;
+}
+.CodeMirror-scroll { min-height: 90px; }
+.mini-sql-input + .CodeMirror, #playgroundInput + .CodeMirror { min-height: unset; }
+.mini-sql-input + .CodeMirror .CodeMirror-scroll { min-height: 60px; }
+.error-text { color: var(--dk-red); font-family: var(--font-mono); font-size: 13px; }
+.csharp-output {
+  background: #050810;
+  border: 1px solid var(--dk-line);
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--dk-green);
+  white-space: pre-wrap;
+  margin: 0;
+  overflow-x: auto;
+}
+.hint-text { margin-top: 10px; color: var(--dk-sub); font-size: 12px; }
+.hint-text code { color: var(--dk-amber); font-family: var(--font-mono); }
+
+.table-wrap { overflow-x: auto; border: 1px solid var(--dk-line); border-radius: 10px; }
+.data-table { width: 100%; border-collapse: collapse; font-family: var(--font-mono); font-size: 13px; }
+.data-table th { text-align: left; padding: 8px 12px; color: var(--dk-cyan); border-bottom: 1px solid var(--dk-line); background: var(--dk-panel2); }
+.data-table td { padding: 8px 12px; color: var(--dk-text); border-bottom: 1px solid var(--dk-line); }
+.data-table tr:nth-child(even) td { background: #0b1220; }
+.empty-rows { color: var(--dk-sub); font-family: var(--font-mono); font-size: 13px; padding: 16px; }
+
+.chart-panel { background: var(--dk-panel); border: 1px solid var(--dk-line); border-radius: 14px; padding: 20px; }
+.chart-panel canvas { max-height: 240px; }
+
+.code-panel {
+  background: #050810;
+  border: 1px solid var(--dk-line);
+  border-radius: 10px;
+  padding: 16px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--dk-green);
+  white-space: pre-wrap;
+  overflow-x: auto;
+  margin-bottom: 20px;
+}
+
+.lesson-query-label {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--dk-amber);
+  white-space: pre-wrap;
+  margin-bottom: 10px;
+}
+
+/* ---- Quiz (light) ---- */
+.quiz-panel { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 24px; }
+.quiz-title { font-family: var(--font-display); color: var(--text); font-size: 16px; font-weight: 600; }
+.quiz-question { color: var(--text); margin-bottom: 8px; font-size: 14px; }
+.quiz-option {
+  text-align: left; padding: 9px 14px; border-radius: 8px; font-family: var(--font-mono); font-size: 13px;
+  cursor: pointer; background: var(--panel); border: 1px solid var(--line); color: var(--text);
+}
+.quiz-option.chosen { background: rgba(11,138,130,0.08); border-color: var(--cyan); }
+.quiz-option.correct { border-color: var(--green); color: var(--green); }
+.quiz-option.wrong { border-color: var(--red); color: var(--red); }
+.quiz-result { font-family: var(--font-mono); font-size: 13px; }
+.quiz-result.good { color: var(--green); }
+.quiz-result.ok { color: var(--amber); }
+
+/* ---- Key takeaway / common mistake / challenge callouts ---- */
+.callout { border-radius: 12px; padding: 16px 18px; margin-bottom: 16px; border: 1px solid; }
+.callout-title { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 6px; font-weight: 600; }
+.callout-body { font-size: 14px; line-height: 1.6; color: var(--text); }
+
+.callout-takeaway { background: rgba(11,138,130,0.06); border-color: rgba(11,138,130,0.35); }
+.callout-takeaway .callout-title { color: var(--cyan); }
+
+.callout-mistake { background: rgba(161,90,6,0.06); border-color: rgba(161,90,6,0.3); }
+.callout-mistake .callout-title { color: var(--amber); }
+
+.callout-blue { background: rgba(37,99,168,0.06); border-color: rgba(37,99,168,0.3); }
+.callout-blue .callout-title { color: var(--blue); }
+.ref-syntax { font-family: var(--font-mono); background: var(--dk-panel2); color: var(--dk-cyan); padding: 6px 10px; border-radius: 6px; font-size: 12.5px; display: inline-block; margin-bottom: 8px; }
+.ref-example { font-family: var(--font-mono); background: var(--dk-panel2); color: var(--dk-text); padding: 8px 10px; border-radius: 6px; font-size: 12px; margin-top: 8px; white-space: pre-wrap; }
+
+.cheatsheet-panel { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
+.cheatsheet-row { background: var(--dk-panel); border: 1px solid var(--dk-line); border-radius: 12px; padding: 14px 16px; }
+.cheatsheet-syntax { font-family: var(--font-mono); color: var(--dk-cyan); font-size: 13px; margin-bottom: 6px; }
+.cheatsheet-desc { font-size: 13px; color: var(--dk-sub); line-height: 1.5; }
+.cheatsheet-example { font-family: var(--font-mono); color: var(--dk-text); font-size: 12px; background: var(--dk-panel2); padding: 8px 10px; border-radius: 6px; margin-top: 8px; white-space: pre-wrap; }
+
+.challenge-panel { background: var(--panel2); border: 1px dashed var(--line); border-radius: 14px; padding: 18px 20px; margin-bottom: 20px; }
+.challenge-title { font-family: var(--font-display); font-size: 15px; font-weight: 700; margin-bottom: 8px; color: var(--text); }
+.challenge-prompt { font-size: 14px; color: var(--sub); margin-bottom: 12px; }
+.challenge-actions { flex-wrap: wrap; margin-bottom: 10px; }
+.challenge-reveal {
+  font-family: var(--font-mono); font-size: 13px; padding: 12px 14px; border-radius: 8px;
+  background: #050810; color: var(--dk-text); margin-top: 8px; white-space: pre-wrap;
+}
+.challenge-reveal.hint { color: var(--dk-amber); }
+.challenge-reveal.solution { color: var(--dk-green); }
+
+.text-btn {
+  font-family: var(--font-mono); font-size: 12px; padding: 8px 14px; border-radius: 8px;
+  border: 1px solid var(--line); background: var(--panel); color: var(--sub); cursor: pointer;
+}
+.text-btn:hover { border-color: var(--cyan); color: var(--cyan); }
+
+/* ---- Tutor check-in (light card, dark reveal for answers) ---- */
+.tutor-checkin { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 20px; margin-bottom: 20px; }
+.tutor-checkin-header { margin-bottom: 10px; }
+.tutor-avatar { width: 24px; height: 24px; border-radius: 50%; background: var(--cyan); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.tutor-line { color: var(--text); font-size: 14px; line-height: 1.6; margin: 6px 0; }
+.tutor-line-alt { color: var(--dk-text); background: var(--dk-panel2); border-radius: 8px; padding: 10px 14px; }
+.tutor-actions { margin-top: 12px; flex-wrap: wrap; }
+.tutor-btn {
+  font-family: var(--font-mono); font-size: 12px; padding: 8px 14px; border-radius: 8px;
+  border: 1px solid var(--line); background: var(--panel); color: var(--sub); cursor: pointer;
+  display: inline-flex; align-items: center; gap: 4px;
+}
+.tutor-btn-primary { border-color: var(--cyan); color: var(--cyan); background: rgba(11,138,130,0.08); }
+.tutor-input {
+  flex: 1; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; color: var(--text);
+  padding: 9px 12px; font-size: 13px;
+}
+
+/* ---- Floating tutor widget ---- */
+.tutor-widget-panel {
+  width: 300px; height: 380px; background: var(--panel); border: 1px solid var(--line); border-radius: 14px;
+  margin-bottom: 12px; display: flex; flex-direction: column; overflow: hidden;
+  box-shadow: 0 8px 30px rgba(16,25,43,0.15);
+}
+.tutor-widget-header { padding: 10px 14px; background: var(--panel2); border-bottom: 1px solid var(--line); }
+.tutor-widget-body { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+.tutor-msg { border-radius: 10px; padding: 8px 12px; font-size: 12px; max-width: 85%; }
+.tutor-msg.user { align-self: flex-end; background: rgba(11,138,130,0.12); color: var(--text); }
+.tutor-msg.tutor { align-self: flex-start; background: var(--panel2); color: var(--text); }
+.tutor-widget-input-row { border-top: 1px solid var(--line); }
+.tutor-widget-input-row input {
+  flex: 1; background: transparent; border: none; color: var(--text); padding: 10px; font-size: 12px; outline: none;
+}
+.tutor-widget-input-row button { background: none; border: none; color: var(--cyan); padding: 0 12px; cursor: pointer; font-weight: 600; }
+.tutor-fab {
+  width: 52px; height: 52px; border-radius: 50%; background: var(--cyan); border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 16px rgba(11,138,130,0.35);
+}
+
+.spin { animation: spin 1s linear infinite; }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+a { color: inherit; }
+.icon-svg { display: inline-block; vertical-align: middle; }
+
+/* ---- Data Analytics widgets (light, spreadsheet/BI styled — distinct from the SQL playground) ---- */
+.widget-panel { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 20px; margin-bottom: 20px; }
+
+.select-input {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--text);
+}
+
+.stat-card { background: var(--panel2); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
+.stat-label { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--sub); margin-bottom: 6px; }
+.stat-value { font-family: var(--font-display); font-size: 22px; font-weight: 700; color: var(--text); }
+
+.table-wrap-light { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; }
+.data-table-light { width: 100%; border-collapse: collapse; font-family: var(--font-mono); font-size: 13px; }
+.data-table-light th { text-align: left; padding: 8px 12px; color: var(--cyan); border-bottom: 1px solid var(--line); background: var(--panel2); }
+.data-table-light td { padding: 6px 12px; color: var(--text); border-bottom: 1px solid var(--line); }
+.data-table-light tr:nth-child(even) td { background: var(--panel2); }
+
+.cell-input {
+  width: 100px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  padding: 5px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--text);
+}
+.cell-input:focus { border-color: var(--cyan); }
+
+.excel-grid { overflow-x: auto; }
+.excel-table th { text-align: center; min-width: 60px; }
+.excel-table td { padding: 2px !important; text-align: center; }
+.excel-cell {
+  width: 100%;
+  min-width: 70px;
+  box-sizing: border-box;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  padding: 6px 8px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text);
+  text-align: center;
+}
+.excel-cell:focus { border-color: var(--cyan); background: var(--panel); }
+
+.cli-history { max-height: 320px; overflow-y: auto; font-family: var(--font-mono); font-size: 13px; }
+.cli-line { color: var(--dk-cyan); margin-top: 10px; }
+.cli-line:first-child { margin-top: 0; }
+.cli-prompt { color: var(--dk-amber); font-family: var(--font-mono); font-weight: 700; }
+.cli-output {
+  color: var(--dk-text);
+  white-space: pre-wrap;
+  margin: 4px 0 0 0;
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+.cli-input {
+  flex: 1;
+  background: #050810;
+  border: 1px solid var(--dk-line);
+  border-radius: 8px;
+  color: var(--dk-green);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  padding: 9px 12px;
+}
+.cli-input:focus { border-color: var(--dk-cyan); outline: none; }
+
+/* ---- Course-card cursor-reactive edge glow ----
+   Adapted from the react-bits BorderGlow component (github.com/react-bits) for this project's
+   plain HTML/CSS/JS stack: no React, no build step. We kept the core mechanic (an outer glow
+   ring whose position tracks the cursor's angle around the card, via --cursor-angle and
+   --edge-proximity custom properties updated in script.js on pointermove) and dropped the
+   inner rainbow mesh-gradient border layer, which needs a transparent card border to show
+   through and would have broken this project's opaque, bordered card style. The color is each
+   course's own accent (see COLORS/COURSES), not a generic purple/blue mesh. */
+.course-card.active {
+  --edge-proximity: 0;
+  --cursor-angle: 45deg;
+  --edge-sensitivity: 55;
+}
+.course-card.active .edge-light {
+  content: "";
+  position: absolute;
+  inset: -22px;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 1;
+  mix-blend-mode: plus-lighter;
+  opacity: calc((var(--edge-proximity) - var(--edge-sensitivity)) / (100 - var(--edge-sensitivity)));
+  transition: opacity 0.2s ease-out;
+  mask-image: conic-gradient(from var(--cursor-angle) at center, black 3%, transparent 14%, transparent 86%, black 97%);
+  -webkit-mask-image: conic-gradient(from var(--cursor-angle) at center, black 3%, transparent 14%, transparent 86%, black 97%);
+}
+.course-card.active:not(:hover) .edge-light {
+  opacity: 0 !important;
+  transition: opacity 0.6s ease-in-out;
+}
+.course-card.active .edge-light::before {
+  content: "";
+  position: absolute;
+  inset: 22px;
+  border-radius: inherit;
+  box-shadow:
+    inset 0 0 0 1px var(--glow-color, var(--cyan)),
+    inset 0 0 4px 0 var(--glow-color-60, var(--cyan)),
+    inset 0 0 12px 0 var(--glow-color-40, var(--cyan)),
+    0 0 10px 0 var(--glow-color-40, var(--cyan)),
+    0 0 26px 2px var(--glow-color-20, var(--cyan)),
+    0 0 46px 2px var(--glow-color-10, var(--cyan));
+}
+@media (prefers-reduced-motion: reduce) {
+  .course-card .edge-light { display: none; }
+}
+
+/* ---- Deep-dive modules (sub-courses within a track), e.g. Python "Loops" ---- */
+
+/* Sidebar row for a module stub: same base as a regular lesson-nav-item, plus an icon
+   and a lesson-count badge so it visibly reads as "opens into more," not a single lesson. */
+.module-stub-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.module-stub-item.active { border-color: var(--card-accent, var(--cyan)); background: rgba(21,127,60,0.08); color: var(--text); }
+.module-stub-text { flex: 1; }
+.module-stub-count {
+  font-size: 10.5px;
+  color: var(--sub);
+  background: var(--panel2);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 2px 8px;
+  white-space: nowrap;
+}
+
+.module-crumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  color: var(--sub);
+  margin-bottom: 22px;
+}
+.module-crumb-link { cursor: pointer; transition: color 0.15s var(--ease); }
+.module-crumb-link:hover { color: var(--text); }
+.module-crumb-sep { display: inline-flex; transform: rotate(90deg); opacity: 0.6; }
+.module-crumb-current { color: var(--text); font-weight: 700; }
+
+.module-intro, .module-outro {
+  max-width: 560px;
+  margin: 12px auto 40px;
+  text-align: center;
+  padding: 8px 8px 4px;
+}
+.module-intro-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-lg);
+  background: rgba(21,127,60,0.14);
+  background: color-mix(in srgb, var(--module-accent, var(--cyan)) 14%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 14px;
+}
+.module-title { font-family: var(--font-display); font-size: 26px; font-weight: 700; margin: 10px 0 8px; color: var(--text); }
+.module-tagline { color: var(--sub); font-size: 14.5px; line-height: 1.6; max-width: 46ch; margin: 0 auto; }
+
+.module-learn-box {
+  text-align: left;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+  margin: 24px 0;
+}
+.module-learn-heading { font-family: var(--font-display); font-weight: 700; font-size: 13px; margin-bottom: 10px; color: var(--text); }
+.module-learn-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 9px; }
+.module-learn-list li { display: flex; align-items: flex-start; gap: 8px; font-size: 13.5px; color: var(--sub); line-height: 1.5; }
+.module-learn-list li svg { flex-shrink: 0; margin-top: 2px; }
+
+.module-progress { margin-bottom: 22px; }
+.module-progress-label {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--sub);
+  margin-bottom: 8px;
+}
+.module-progress-title { color: var(--text); text-align: right; }
+.module-progress-track { display: flex; gap: 4px; }
+.module-progress-seg {
+  flex: 1;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--line);
+  transition: background 0.2s var(--ease);
+}
+
+/* ---------- Accounts (nav chip + sign-in/register modal) ---------- */
+.auth-cta {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: linear-gradient(135deg, var(--cyan), color-mix(in srgb, var(--cyan) 60%, var(--green)));
+  color: #fff; font-family: var(--font-display); font-weight: 700; font-size: 13px;
+  padding: 8px 16px; border-radius: 999px; border: none; cursor: pointer;
+  transition: transform 0.15s var(--ease), box-shadow 0.15s var(--ease);
+}
+.auth-cta:hover { box-shadow: 0 6px 18px color-mix(in srgb, var(--cyan) 40%, transparent); transform: translateY(-1px); }
+.auth-cta:active { transform: translateY(0) scale(0.98); }
+
+.account-menu { display: flex; align-items: center; gap: 8px; }
+.account-chip {
+  display: flex; align-items: center; gap: 8px;
+  padding: 4px 12px 4px 4px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--panel);
+}
+.account-avatar {
+  width: 24px; height: 24px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, var(--cyan), var(--magenta));
+  color: #fff; font-family: var(--font-mono); font-size: 11px; font-weight: 600;
+}
+.account-name { font-size: 13px; font-weight: 500; color: var(--text); max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.admin-badge {
+  display: inline-flex; align-items: center; gap: 3px;
+  font-family: var(--font-mono); font-size: 10px; font-weight: 600; letter-spacing: 0.03em;
+  color: #fff; background: linear-gradient(135deg, var(--magenta), color-mix(in srgb, var(--magenta) 60%, var(--amber)));
+  padding: 2px 7px; border-radius: 999px;
+}
+.account-logout {
+  display: flex; align-items: center; justify-content: center;
+  width: 26px; height: 26px; border-radius: 50%; border: 1px solid var(--line);
+  background: transparent; cursor: pointer; transition: background 0.15s var(--ease);
+  flex-shrink: 0;
+}
+.account-logout:hover { background: var(--panel2); }
+
+/* ---- Auth modal: dark "terminal card" with an ambient rotating glow ring,
+   consistent with the site's own signature course-card glow mechanic ---- */
+.modal-backdrop {
+  position: fixed; inset: 0; z-index: 200;
+  background: color-mix(in srgb, #05070d 70%, transparent);
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+}
+.modal-backdrop.auth-anim { animation: authBackdropIn 0.25s var(--ease); }
+@keyframes authBackdropIn { from { opacity: 0; } to { opacity: 1; } }
+
+@property --auth-angle { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+@keyframes authRotate { to { --auth-angle: 360deg; } }
+
+.auth-card {
+  position: relative; width: 100%; max-width: 400px;
+  border-radius: 18px; padding: 1.5px;
+}
+.auth-card.auth-anim { animation: authCardIn 0.35s var(--ease); }
+@keyframes authCardIn { from { opacity: 0; transform: translateY(10px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+
+.auth-card-glow {
+  position: absolute; inset: 0; border-radius: 18px;
+  background: conic-gradient(from var(--auth-angle), var(--dk-cyan), var(--dk-magenta), var(--dk-green), var(--dk-amber), var(--dk-cyan));
+  animation: authRotate 6s linear infinite;
+  opacity: 0.9;
+}
+.auth-card-inner {
+  position: relative; border-radius: 16.5px; overflow: hidden;
+  background: var(--dk-panel);
+  box-shadow: 0 25px 70px rgba(0,0,0,0.5);
+}
+
+.auth-termbar {
+  display: flex; align-items: center; gap: 7px;
+  padding: 12px 14px; background: var(--dk-panel2); border-bottom: 1px solid var(--dk-line);
+}
+.auth-dot { width: 9px; height: 9px; border-radius: 50%; opacity: 0.85; }
+.auth-termbar-label {
+  font-family: var(--font-mono); font-size: 11.5px; color: var(--dk-sub); margin-left: 6px;
+}
+.auth-caret { display: inline-block; animation: authBlink 1.1s step-end infinite; color: var(--dk-cyan); }
+@keyframes authBlink { 50% { opacity: 0; } }
+
+.auth-body { padding: 26px 26px 28px; }
+
+.auth-tabs {
+  position: relative; display: flex; background: var(--dk-panel2);
+  border: 1px solid var(--dk-line); border-radius: 10px; padding: 3px; margin-bottom: 22px;
+}
+.auth-tab {
+  position: relative; z-index: 1; flex: 1; text-align: center;
+  padding: 8px 0; border: none; background: transparent; cursor: pointer;
+  font-family: var(--font-display); font-weight: 600; font-size: 13px; color: var(--dk-sub);
+  transition: color 0.2s var(--ease);
+}
+.auth-tab.active { color: #ffffff; }
+.auth-tab-indicator {
+  position: absolute; top: 3px; left: 3px; width: calc(50% - 3px); height: calc(100% - 6px);
+  background: var(--dk-cyan); border-radius: 7px;
+  transition: transform 0.25s var(--ease);
+}
+
+.auth-heading { font-family: var(--font-display); font-size: 21px; font-weight: 700; color: var(--dk-text); margin: 0 0 4px; }
+.auth-subheading { font-size: 13px; color: var(--dk-sub); margin: 0 0 20px; }
+
+.auth-error {
+  display: flex; align-items: flex-start; gap: 8px;
+  font-size: 12.5px; color: #ffb4b4; line-height: 1.4;
+  background: color-mix(in srgb, var(--red) 16%, transparent);
+  border: 1px solid color-mix(in srgb, var(--red) 35%, transparent);
+  border-radius: 9px; padding: 10px 12px; margin-bottom: 16px;
+  animation: authCardIn 0.2s var(--ease);
+}
+.auth-error svg { flex-shrink: 0; margin-top: 1px; }
+
+.auth-field { margin-bottom: 14px; }
+.auth-label {
+  display: block; margin-bottom: 6px;
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.03em;
+  color: var(--dk-sub); text-transform: uppercase;
+}
+.auth-input-wrap {
+  position: relative; display: flex; align-items: center; gap: 9px;
+  background: #050810; border: 1px solid var(--dk-line); border-radius: 9px;
+  padding: 0 12px; transition: border-color 0.15s var(--ease), box-shadow 0.15s var(--ease);
+}
+.auth-input-wrap:focus-within {
+  border-color: var(--dk-cyan);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--dk-cyan) 22%, transparent);
+}
+.auth-input-wrap svg { flex-shrink: 0; }
+.auth-input {
+  flex: 1; min-width: 0; background: transparent; border: none; outline: none;
+  color: var(--dk-text); font-family: var(--font-body); font-size: 14px;
+  padding: 11px 0;
+}
+.auth-input::placeholder { color: var(--dk-sub); opacity: 0.7; }
+.auth-eye {
+  flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+  background: none; border: none; cursor: pointer; padding: 4px; color: var(--dk-sub);
+}
+
+.auth-submit {
+  width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;
+  margin-top: 6px; padding: 12px 0; border: none; border-radius: 10px; cursor: pointer;
+  background: linear-gradient(135deg, var(--dk-cyan), color-mix(in srgb, var(--dk-cyan) 55%, var(--dk-green)));
+  color: #08110f; font-family: var(--font-display); font-weight: 700; font-size: 14px;
+  transition: transform 0.15s var(--ease), box-shadow 0.15s var(--ease), opacity 0.15s var(--ease);
+}
+.auth-submit:hover:not(:disabled) { box-shadow: 0 8px 24px color-mix(in srgb, var(--dk-cyan) 35%, transparent); transform: translateY(-1px); }
+.auth-submit:active:not(:disabled) { transform: translateY(0) scale(0.98); }
+.auth-submit:disabled { opacity: 0.7; cursor: default; }
+.auth-submit svg { flex-shrink: 0; }
+.auth-submit svg[width="15"] { animation: authSpin 0.8s linear infinite; }
+@keyframes authSpin { to { transform: rotate(360deg); } }
+.auth-spin { opacity: 0.9; }
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-card-glow { animation: none; }
+  .modal-backdrop, .auth-card, .auth-error { animation: none; }
+}
+
+/* ---------- Native Android app polish (only applied inside the packaged
+   app - the website itself never gets the .native-app class, so none of
+   this affects normal browser use) ---------- */
+.native-app, .native-app body {
+  overscroll-behavior-y: contain; /* no pull-to-refresh / rubber-band bounce - a big part of what reads as "just a browser" */
+  -webkit-tap-highlight-color: transparent; /* no gray flash on every tap */
+}
+.native-app button, .native-app [data-action], .native-app .course-card, .native-app .lesson-nav-item {
+  touch-action: manipulation; /* removes the ~300ms tap delay and accidental double-tap zoom on anything interactive */
+}
+.native-app ::-webkit-scrollbar { display: none; } /* native Android scroll already shows its own transient scroll thumb */
+.native-app .topnav {
+  padding-top: max(10px, env(safe-area-inset-top)); /* keeps content clear of the status bar / camera cutout */
+}
+.native-app .tutor-widget, .native-app .modal-backdrop {
+  padding-bottom: max(20px, env(safe-area-inset-bottom)); /* keeps content clear of the gesture-nav bar */
+}
+

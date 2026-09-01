@@ -1,0 +1,28 @@
+{
+  "appId": "com.queryacademy.app",
+  "appName": "query.academy",
+  "webDir": "www",
+  "backgroundColor": "#0d1220",
+  "android": {
+    "backgroundColor": "#0d1220",
+    "allowMixedContent": false,
+    "webContentsDebuggingEnabled": false
+  },
+  "server": {
+    "androidScheme": "https"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 800,
+      "backgroundColor": "#0d1220",
+      "androidSplashResourceName": "splash",
+      "androidScaleType": "CENTER_CROP",
+      "showSpinner": false
+    },
+    "StatusBar": {
+      "style": "DARK",
+      "backgroundColor": "#0d1220",
+      "overlaysWebView": false
+    }
+  }
+}

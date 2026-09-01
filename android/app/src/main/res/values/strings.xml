@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">query.academy</string>
+    <string name="title_activity_main">query.academy</string>
+    <string name="package_name">com.queryacademy.app</string>
+    <string name="custom_url_scheme">com.queryacademy.app</string>
+</resources>

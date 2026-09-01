@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>query.academy — Learn SQL by running it</title>
+
+  <!-- PWA: installable app support (Android/desktop "install app", iOS "add to
+       home screen"). See README for how to turn this into an actual .apk. -->
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#0d1220" />
+  <link rel="icon" href="icons/icon-192.png" type="image/png" />
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="query.academy" />
+
+  <!-- Applies the saved/system theme before first paint, so there's no flash of the wrong theme. -->
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem("qa-theme");
+        var theme = (saved === "light" || saved === "dark")
+          ? saved
+          : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+        document.documentElement.setAttribute("data-theme", theme);
+      } catch (e) {
+        document.documentElement.setAttribute("data-theme", "light");
+      }
+    })();
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <!-- sql.js: real SQLite compiled to WebAssembly, runs entirely in the browser -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/sql-wasm.js"></script>
+  <!-- Pyodide: real Python compiled to WebAssembly, runs entirely in the browser -->
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.26.3/full/pyodide.js"></script>
+  <!-- HyperFormula: real Excel-compatible formula engine, runs entirely in the browser -->
+  <script src="https://cdn.jsdelivr.net/npm/hyperformula@3.3.0/dist/hyperformula.full.min.js"></script>
+  <!-- Chart.js for the lesson charts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+
+  <link rel="stylesheet" href="style.css?v=31" />
+  <!-- CodeMirror 5 - code editors for the SQL/Python/C#/JS playgrounds (syntax
+       highlighting, real indent handling, bracket matching). Loaded from
+       cdnjs, same as the rest of this no-build-step site's dependencies. -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/material-darker.min.css" />
+</head>
+<body>
+  <div id="app"></div>
+
+  <script src="data.js?v=31"></script>
+  <script src="csharp-content-entry.js?v=31"></script>
+  <script src="csharp-content-pro.js?v=31"></script>
+  <script src="csharp-content-master.js?v=31"></script>
+  <script src="python-content-entry.js?v=31"></script>
+  <script src="python-content-pro.js?v=31"></script>
+  <script src="python-content-master.js?v=31"></script>
+  <script src="excel-content-entry.js?v=31"></script>
+  <script src="excel-content-pro.js?v=31"></script>
+  <script src="excel-content-master.js?v=31"></script>
+  <script src="cloud-content-entry.js?v=31"></script>
+  <script src="cloud-content-pro.js?v=31"></script>
+  <script src="cloud-content-master.js?v=31"></script>
+  <script src="powerbi-content-entry.js?v=31"></script>
+  <script src="powerbi-content-pro.js?v=31"></script>
+  <script src="powerbi-content-master.js?v=31"></script>
+  <script src="javascript-content-entry.js?v=31"></script>
+  <script src="javascript-content-pro.js?v=31"></script>
+  <script src="javascript-content-master.js?v=31"></script>
+  <script src="api-content-entry.js?v=31"></script>
+  <script src="api-content-pro.js?v=31"></script>
+  <script src="api-content-master.js?v=31"></script>
+  <!-- CodeMirror core + modes for the four code editors (SQL, Python, C#, JS) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/clike/clike.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/sql/sql.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/matchbrackets.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.js"></script>
+  <script src="script.js?v=31"></script>
+</body>
+</html>
