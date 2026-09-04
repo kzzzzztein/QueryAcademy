@@ -49,6 +49,8 @@ const COURSES = [
   { id: "cloud", title: "Cloud Computing", tagline: "Deploy, scale, and secure the modern way", status: "active", accent: "#2563a8", icon: "cloud" },
   { id: "javascript", title: "JavaScript", tagline: "Bring the web to life", status: "active", accent: "#8a6d00", icon: "terminal" },
   { id: "api", title: "APIs", tagline: "Connect, request, and integrate real services", status: "active", accent: "#6d3fc4", icon: "plug" },
+  { id: "dba", title: "Database Administration", tagline: "Keep real databases running, backed up, and fast", status: "active", accent: "#b23a2e", icon: "server" },
+  { id: "ai-eng", title: "AI Engineering", tagline: "Build real applications on top of LLMs", status: "active", accent: "#4f46e5", icon: "cpu" },
 ];
 
 // Every course is organized into three levels - Entry, Professional, Master -

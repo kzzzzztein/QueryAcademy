@@ -421,10 +421,21 @@ import sys, io, builtins, traceback
 
 _stdin_iter = iter(_stdin_lines)
 def _fake_input(prompt=""):
+    # Real input() writes its prompt to stdout before reading - the earlier
+    # version of this shim silently dropped it, so a program that's mostly
+    # prompts (input("Enter a number: ")) looked like it printed nothing at
+    # all, even though it ran fine. It also echoes back whatever line was
+    # "typed" (pulled from the stdin box), same as a real terminal shows
+    # what you type - together this makes the output read like an actual
+    # transcript instead of just silently skipping every input() line.
+    if prompt:
+        print(prompt, end="")
     try:
-        return next(_stdin_iter)
+        line = next(_stdin_iter)
     except StopIteration:
-        return ""
+        line = ""
+    print(line)
+    return line
 builtins.input = _fake_input
 
 _stdout = io.StringIO()
@@ -602,6 +613,8 @@ function icon(name, color, size) {
     eye: `<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z" ${stroke}/><circle cx="12" cy="12" r="3" ${stroke}/>`,
     eyeOff: `<path d="M3 3l18 18" ${stroke}/><path d="M10.6 5.2A10.6 10.6 0 0 1 12 5c6.4 0 10 7 10 7a15.6 15.6 0 0 1-3.4 4.3M6.6 6.6C3.7 8.5 2 12 2 12s3.6 7 10 7c1.4 0 2.6-.3 3.7-.8" ${stroke}/><path d="M9.9 10a3 3 0 0 0 4.2 4.2" ${stroke}/>`,
     spinner: `<circle cx="12" cy="12" r="9" stroke="${color}" stroke-width="2.2" fill="none" opacity="0.25"/><path d="M21 12a9 9 0 0 0-9-9" stroke="${color}" stroke-width="2.2" fill="none" stroke-linecap="round"/>`,
+    server: `<rect x="3" y="4" width="18" height="6" rx="1.5" ${stroke}/><rect x="3" y="14" width="18" height="6" rx="1.5" ${stroke}/><line x1="7" y1="7" x2="7.01" y2="7" ${stroke}/><line x1="7" y1="17" x2="7.01" y2="17" ${stroke}/>`,
+    cpu: `<rect x="6" y="6" width="12" height="12" rx="1.5" ${stroke}/><rect x="9" y="9" width="6" height="6" rx="1" ${stroke}/><line x1="9" y1="2" x2="9" y2="5" ${stroke}/><line x1="15" y1="2" x2="15" y2="5" ${stroke}/><line x1="9" y1="19" x2="9" y2="22" ${stroke}/><line x1="15" y1="19" x2="15" y2="22" ${stroke}/><line x1="2" y1="9" x2="5" y2="9" ${stroke}/><line x1="2" y1="15" x2="5" y2="15" ${stroke}/><line x1="19" y1="9" x2="22" y2="9" ${stroke}/><line x1="19" y1="15" x2="22" y2="15" ${stroke}/>`,
   };
   return `<svg class="icon-svg" width="${size}" height="${size}" viewBox="0 0 24 24">${paths[name] || ""}</svg>`;
 }
