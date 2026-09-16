@@ -415,18 +415,6 @@ const AIENG_QUIZ_BANK = {
   ],
 };
 
-// Wire this course into the shared registry (COURSE_CONTENT is declared in
-// data.js, loaded before this file - we're adding to it, not replacing it).
-// Professional and Master levels use emptyLevel() for now - the UI shows
-// them as "coming soon" until lessons are added, same pattern the API
-// course used while it was still being built out.
-COURSE_CONTENT["ai-eng"] = {
-  entry: {
-    basic: AIENG_ENTRY_BASIC,
-    intermediate: AIENG_ENTRY_INTERMEDIATE,
-    advanced: AIENG_ENTRY_ADVANCED,
-    quiz: AIENG_QUIZ_BANK,
-  },
-  professional: emptyLevel(),
-  master: emptyLevel(),
-};
+// Professional and Master levels live in ai-eng-content-pro.js and
+// ai-eng-content-master.js - the master file wires this course into
+// COURSE_CONTENT once all three level files have loaded.

@@ -1,0 +1,203 @@
+// =========================================================================
+// AI Engineering - Professional Level
+// =========================================================================
+const AIENG_PRO_BASIC = [
+  {
+    title: "Prompt engineering patterns: few-shot and chain-of-thought",
+    body: "Beyond basic prompt specificity, a couple of well-established patterns reliably improve output quality on harder tasks. Few-shot prompting includes a handful of example input/output pairs directly in the prompt before the actual request, showing the model exactly the pattern to follow rather than just describing it in words - genuinely useful for tasks with a specific format or style that's easier to demonstrate than to precisely describe. Chain-of-thought prompting asks the model to reason through a problem step by step before giving a final answer (\"think through this step by step, then give your answer\"), which measurably improves accuracy on tasks involving genuine multi-step reasoning - math, logic, multi-part questions - since it gives the model room to work through intermediate steps rather than jumping straight to a final answer that skips reasoning it never actually did.",
+    altExplain: "Few-shot prompting shows example input/output pairs in the prompt, demonstrating a pattern rather than describing it. Chain-of-thought asks the model to reason step by step before answering, which measurably improves accuracy on genuine multi-step reasoning tasks.",
+    visual: null,
+    widget: "insight-check",
+    insightCheck: {
+      question: "A task requires the model to solve a multi-step word problem correctly, where getting an intermediate step wrong would produce a wrong final answer. Which prompting pattern most directly helps here?",
+      options: ["Few-shot examples of the desired output format", "Chain-of-thought prompting, asking the model to reason through the problem step by step before answering", "Increasing the temperature setting", "Neither pattern helps with reasoning tasks"], correct: 1,
+      explanation: "Chain-of-thought prompting is specifically effective for multi-step reasoning tasks like this - explicitly asking the model to work through intermediate steps before giving a final answer measurably improves accuracy, since it gives the model room to actually reason rather than jumping straight to an answer.",
+    },
+    keyTakeaway: "Few-shot demonstrates a pattern through examples; chain-of-thought improves genuine multi-step reasoning by giving the model room to work through intermediate steps - two genuinely different tools for two different kinds of task difficulty.",
+    commonMistake: "Applying chain-of-thought prompting to every task by default, even simple ones that don't genuinely require multi-step reasoning - it adds real tokens and latency for a benefit that only shows up on tasks that actually need the extra reasoning room.",
+  },
+  {
+    title: "Prompt versioning and management",
+    body: "A prompt embedded directly in application code, changed by editing and redeploying that code every time, makes it hard to track what changed, when, or why - and hard to test a new version against the old one before fully committing to it. Treating prompts as versioned, tracked assets (in their own files, or a dedicated prompt management tool) brings the same discipline this platform's own DBA course applies to schema migrations - every change reviewable, a clear history, and the ability to run an old and new prompt version side by side against real test cases before deciding which one actually performs better. This matters more as a product's prompts grow in number and complexity - a handful of hardcoded strings might be manageable by hand, but dozens of prompts across different features genuinely need this discipline to change safely and confidently.",
+    altExplain: "Prompts hardcoded in application code are hard to track and test changes to. Versioning prompts as tracked assets (their own files or a management tool) brings the same review-and-history discipline as schema migrations - testing an old and new version side by side before committing.",
+    visual: null,
+    keyTakeaway: "Prompt versioning's real value grows with a product's prompt complexity - a handful of prompts might be manageable by hand, but dozens across different features genuinely need tracked history and side-by-side testing to change safely.",
+    commonMistake: "Editing a production prompt directly in application code with no version history or side-by-side testing against the previous version, making it hard to know whether a change actually helped or quietly made things worse.",
+  },
+  {
+    title: "Handling model errors and rate limits gracefully",
+    body: "An LLM API call can fail for reasons genuinely outside an application's control - the provider having a brief outage, a rate limit being hit under heavy load, a request timing out. A production application needs deliberate handling for this, the same way any other external API dependency does (a topic this platform's own APIs course covers for web APIs generally): retrying transient failures with exponential backoff, rather than either giving up immediately or hammering an already-struggling service with immediate retries; and having a sensible fallback for when the LLM genuinely isn't available at all - a cached previous response, a simpler non-AI feature, or a clear, honest message to the user, rather than the application breaking outright with no graceful path at all.",
+    altExplain: "LLM API calls can fail for reasons outside your control - outages, rate limits, timeouts. Production apps need retries with exponential backoff (not immediate hammering) and a sensible fallback for when the LLM genuinely isn't available, rather than breaking outright.",
+    visual: null,
+    keyTakeaway: "An LLM API is an external dependency like any other, and deserves the same resilience patterns (backoff retries, graceful fallbacks) this platform's APIs course already covers for web APIs generally - not special-cased as somehow exempt from needing them.",
+    commonMistake: "Treating an LLM API call as if it will always succeed, with no retry logic or fallback path for when it genuinely doesn't - a rate limit or brief outage then becomes a full feature failure instead of a handled, graceful degradation.",
+  },
+  {
+    title: "Multi-turn conversation management",
+    body: "A chat application needs to send the model the relevant conversation history with every single new message, since the model itself has no memory between separate API calls - each request is genuinely independent unless the application explicitly includes prior messages in it. As a conversation grows longer, this history can eventually exceed the model's context window (covered at the entry level of this course), which means an application needs a deliberate strategy: truncating the oldest messages, periodically summarizing older parts of the conversation into a shorter form, or some combination of both - rather than either silently dropping context in a way that confuses the model, or letting a request simply fail once the history grows too large.",
+    altExplain: "A chat application must send relevant history with every message, since the model has no memory between calls. As history grows, it can exceed the context window - needing a deliberate strategy (truncating oldest messages, summarizing older parts) rather than silently confusing the model or failing outright.",
+    visual: null,
+    keyTakeaway: "The model has no memory of its own between API calls - every appearance of an ongoing, remembered conversation is actually the application resending relevant history with each new request, not the model genuinely retaining anything itself.",
+    commonMistake: "Assuming a model 'remembers' earlier parts of a conversation on its own, without realizing the application itself is responsible for resending relevant history with every single request, and for handling what happens once that history grows too large.",
+  },
+  {
+    title: "Choosing between different models for different tasks",
+    body: "Different models genuinely have different strengths, and a production application often benefits from using more than one for different kinds of work, rather than sending every request to a single default model. A smaller, faster model might handle straightforward classification or extraction tasks well and cheaply; a larger, more capable model might be reserved for genuinely complex reasoning or nuanced writing; a model specifically trained or fine-tuned for code might outperform a general-purpose one on programming tasks specifically. This connects directly to the cost/latency routing pattern covered later in this course's advanced track - matching a task's actual requirements to an appropriately capable (and appropriately priced) model, rather than defaulting every single request to whichever model happens to be the most capable one available.",
+    altExplain: "Different models have different strengths - a smaller model for simple classification, a larger one for complex reasoning, a code-specialized model for programming tasks. Matching a task to an appropriately capable model, rather than defaulting everything to the most capable one, is a real practical decision.",
+    visual: null,
+    keyTakeaway: "Matching a specific task's actual requirements to an appropriately capable model is a genuine architectural decision worth making deliberately - not simply defaulting every single request to whichever model is most capable, or most familiar, by habit.",
+    commonMistake: "Using a single model for every task in an application regardless of the task's actual complexity, missing real opportunities to use a cheaper, faster, equally-capable model for the many tasks that don't genuinely need the most powerful option available.",
+  },
+  {
+    title: "Cheatsheet: Basic track",
+    body: "A quick reference for the concepts introduced in this track - bookmark this lesson and come back to it any time you need a quick reminder, rather than re-reading full lessons.",
+    altExplain: "This lesson is just a summary table of what you've already learned in this track - nothing new to learn here.",
+    visual: null,
+    isCheatsheet: true,
+    refTable: [
+      { syntax: "Few-shot vs chain-of-thought", desc: "Few-shot demonstrates a pattern via examples; chain-of-thought improves genuine multi-step reasoning.", example: "Chain-of-thought for math/logic, few-shot for format" },
+      { syntax: "Versioned prompts", desc: "Track prompts as reviewable, tested assets - same discipline as schema migrations.", example: "Test old vs new version side by side before committing" },
+      { syntax: "Retries + fallback for LLM calls", desc: "Treat an LLM API like any external dependency - backoff retries, a graceful fallback, not just hoping it always succeeds.", example: "Exponential backoff, then a fallback path" },
+      { syntax: "Sending conversation history each call", desc: "The model has no memory between calls - the app resends relevant history every time, and must handle it exceeding the context window.", example: "Truncate oldest messages or summarize older parts" },
+      { syntax: "Routing tasks to appropriate models", desc: "Match a task's actual complexity to an appropriately capable (and priced) model, not one default for everything.", example: "Small model for classification, large for complex reasoning" },
+    ],
+  },
+];
+
+const AIENG_PRO_INTERMEDIATE = [
+  {
+    title: "Building an agent: reasoning and tool use in a loop",
+    body: "An AI agent extends the function-calling pattern (covered at the entry level of this course) into a repeated loop: the model reasons about a goal, decides on an action (calling a specific tool), observes the result, and then reasons again about what to do next - repeating this reasoning-action-observation cycle until the goal is genuinely satisfied, rather than a single request/response exchange. A research agent tasked with answering a complex question might search for information, read a result, decide it needs a more specific follow-up search, run that, and only then synthesize a final answer - several genuine reasoning steps and tool calls chained together, not one single call. This loop is what separates a true agent from a single function-calling exchange: the model gets to iterate based on what it actually observes at each step, adjusting its plan as it goes rather than committing to one fixed sequence of actions upfront.",
+    altExplain: "An agent extends function calling into a repeated loop: reason about a goal, take an action, observe the result, reason again - repeating until the goal is satisfied, rather than one single request/response exchange. This iterative loop is what separates a true agent from a single function call.",
+    visual: null,
+    keyTakeaway: "The reasoning-action-observation loop, repeated until a goal is satisfied, is what genuinely separates an agent from a single function-calling exchange - the model gets to adjust its plan based on what it actually observes at each step.",
+    commonMistake: "Calling any single function-calling exchange 'an agent' - the defining characteristic of an agent is the repeated loop, adjusting based on observed results, not a single one-shot tool call.",
+  },
+  {
+    title: "Multi-step agent workflows",
+    body: "A genuinely complex task often needs to be broken into a sequence of distinct sub-steps, each potentially handled by a different specialized prompt, tool, or even a different model - a document-processing agent might have one step that extracts raw text, another that identifies and structures specific relevant fields, and a final step that verifies the extracted result actually looks complete and correct, before handing the result off. Structuring a workflow this way, with clear boundaries between distinct steps, makes it meaningfully easier to test and debug than one single, enormous prompt trying to accomplish the entire task in one shot - when something goes wrong, it's far more tractable to identify which specific step actually failed, rather than trying to untangle one large, monolithic prompt covering everything at once.",
+    altExplain: "A complex task can be broken into distinct sub-steps (extraction, structuring, verification), each potentially its own prompt or tool. This makes debugging far more tractable - identifying which specific step failed, rather than untangling one giant monolithic prompt.",
+    visual: null,
+    keyTakeaway: "Clear boundaries between distinct workflow steps make debugging meaningfully more tractable - when something fails, the question becomes 'which specific step', not 'somewhere in this one giant prompt'.",
+    commonMistake: "Building one enormous, monolithic prompt trying to accomplish an entire multi-step task in a single shot, rather than breaking it into distinct steps that are each individually easier to test, debug, and improve.",
+  },
+  {
+    title: "Memory: short-term vs long-term context for agents",
+    body: "Short-term memory is simply the current conversation or task's own context - what's already in the prompt right now, gone once that specific session ends, same as the multi-turn conversation history covered earlier in this course. Long-term memory persists genuinely useful information across entirely separate sessions - a user's stated preferences, facts learned in a previous interaction - typically stored externally (in a database, or as embeddings in a vector store for retrieval, connecting directly to the RAG concepts covered in this course's entry-level deep-dive module) and deliberately pulled back into context only when actually relevant to a new session, rather than every single stored fact being crammed into every prompt regardless of relevance.",
+    altExplain: "Short-term memory is the current session's own context, gone once it ends. Long-term memory persists useful information across separate sessions, typically stored externally and retrieved (often via the same RAG techniques covered earlier) only when actually relevant to a new session.",
+    visual: null,
+    keyTakeaway: "Long-term memory is really just RAG applied to a user's own history and preferences rather than a document collection - stored externally, retrieved deliberately and selectively, not crammed wholesale into every single prompt.",
+    commonMistake: "Attempting to give an agent 'long-term memory' by simply appending every past interaction into every new prompt indefinitely, rather than storing it externally and retrieving only what's actually relevant to the current context.",
+  },
+  {
+    title: "Orchestrating multiple LLM calls (chains and pipelines)",
+    body: "Many genuinely useful AI features aren't a single LLM call at all, but a chain of them - a document summarization feature might first call one prompt to extract key points, then a second call to organize those points into a coherent structure, then a third to write the final polished summary in a specific tone. Orchestration frameworks exist specifically to manage this kind of multi-call pipeline: passing each step's output cleanly into the next step's input, handling errors at any individual step in the chain without necessarily failing the entire pipeline, and making the overall multi-step flow genuinely easier to reason about, test, and modify than a single enormous prompt attempting to accomplish the same thing all at once, echoing the same multi-step workflow benefits covered earlier in this track.",
+    altExplain: "Many AI features are actually a chain of LLM calls, not one - extract key points, then organize them, then write a final summary. Orchestration frameworks manage passing output between steps and handling errors at any individual step, without necessarily failing the whole pipeline.",
+    visual: null,
+    keyTakeaway: "A chain of smaller, focused LLM calls is often genuinely easier to build, test, and debug than one enormous prompt trying to do everything at once - the same underlying benefit as breaking a multi-step agent workflow into distinct steps.",
+    commonMistake: "Trying to accomplish a genuinely multi-step task (extract, organize, summarize) in a single, very long, complex prompt, rather than breaking it into a chain of smaller, more focused, individually-testable calls.",
+  },
+  {
+    title: "Testing AI features",
+    body: "Beyond the basic output evaluation covered at the entry level of this course, testing a real AI feature in a production codebase means integrating that evaluation into the same development workflow regular software testing already uses - running a test suite of realistic inputs against expected outputs (or a scoring rubric) automatically on every code change, the same way unit tests already run automatically for regular application code. This catches a regression - a prompt change, a model upgrade, a pipeline restructuring that quietly makes an AI feature perform measurably worse - before it ever reaches production, the same protection regular automated tests already provide for the rest of an application's code, rather than treating an AI feature's quality as something that only gets checked occasionally and manually.",
+    altExplain: "Testing an AI feature means integrating evaluation into the normal development workflow - running a test suite automatically on every code change, the same way unit tests already run for regular code, catching regressions before they reach production.",
+    visual: null,
+    keyTakeaway: "The real goal is treating an AI feature's evaluation with the same automatic, every-change rigor regular unit tests already get - not something checked only occasionally and manually, which lets regressions slip through undetected.",
+    commonMistake: "Testing an AI feature's quality only occasionally and manually, rather than integrating automated evaluation into the same CI pipeline that already catches regular code regressions on every single change.",
+  },
+  {
+    title: "Cheatsheet: Intermediate track",
+    body: "A quick reference for the concepts introduced in this track - bookmark this lesson and come back to it any time you need a quick reminder, rather than re-reading full lessons.",
+    altExplain: "This lesson is just a summary table of what you've already learned in this track - nothing new to learn here.",
+    visual: null,
+    isCheatsheet: true,
+    refTable: [
+      { syntax: "Reason -> act -> observe loop", desc: "What genuinely separates an agent from a single function call - iterating based on observed results.", example: "Repeats until the goal is actually satisfied" },
+      { syntax: "Multi-step workflows", desc: "Breaking a complex task into distinct steps makes debugging far more tractable than one giant prompt.", example: "Extract → structure → verify, as separate steps" },
+      { syntax: "Short-term vs long-term memory", desc: "Short-term is the current session's context; long-term persists across sessions, retrieved selectively (RAG applied to user history).", example: "Stored externally, pulled in only when relevant" },
+      { syntax: "Orchestration / chains", desc: "Manages a multi-call pipeline - passing output between steps, handling errors per-step.", example: "Extract → organize → write, as a chain" },
+      { syntax: "Automated AI feature testing", desc: "Integrate evaluation into CI, running automatically on every change - catches regressions before production.", example: "Same rigor as regular unit tests" },
+    ],
+  },
+];
+
+const AIENG_PRO_ADVANCED = [
+  {
+    title: "Multi-agent systems",
+    body: "Some tasks genuinely benefit from multiple distinct agents, each with its own specialized role, working together rather than one single agent trying to handle everything - a researcher agent that gathers information, a writer agent that drafts content from what was gathered, and an editor agent that reviews and refines the draft, each with its own focused prompt and toolset rather than one agent juggling all three responsibilities simultaneously. This mirrors how a human team divides genuinely complex work among specialists rather than one generalist attempting everything alone, but it introduces real coordination overhead: agents need a defined way to hand work off to each other, and a genuinely harder problem to debug when something goes wrong somewhere across the handoffs between agents rather than within any single one.",
+    altExplain: "Multi-agent systems use several specialized agents (researcher, writer, editor) working together, rather than one agent handling everything - mirroring how a human team divides complex work. This introduces real coordination overhead and makes debugging genuinely harder across handoffs.",
+    visual: null,
+    keyTakeaway: "Multi-agent systems trade a single agent's simplicity for specialization, at the real cost of coordination overhead and harder debugging across the handoffs between agents - a genuine tradeoff, not an unambiguous upgrade over a single well-designed agent.",
+    commonMistake: "Reaching for a multi-agent architecture by default for its own sake, without a task genuinely complex enough to benefit from specialization - the coordination overhead and debugging complexity are real costs that need a correspondingly real benefit to justify them.",
+  },
+  {
+    title: "Structured reasoning and planning",
+    body: "Beyond simple chain-of-thought (covered at a basic level earlier in this course), more structured planning approaches have an agent explicitly generate a multi-step plan before executing any of it - listing out the intended sequence of actions upfront, rather than deciding each next step reactively, one at a time, purely based on the immediately preceding observation. This tends to produce more coherent, deliberate behavior on genuinely complex tasks, since the agent can be checked (by a person, or by another verification step) against its own stated plan before committing to execution, and can revise the whole plan if an early step's actual result reveals the original plan needs to change - rather than only ever reacting one single step at a time with no broader view of where it's actually heading.",
+    altExplain: "Structured planning has an agent generate an explicit multi-step plan upfront, rather than deciding each step reactively one at a time. This produces more coherent behavior on complex tasks and lets the plan be checked or revised before/during execution, not just reacted to step by step.",
+    visual: null,
+    keyTakeaway: "An explicit upfront plan can be checked and revised before or during execution - a genuine advantage over purely reactive, one-step-at-a-time behavior with no broader view of where the whole task is actually heading.",
+    commonMistake: "Relying purely on reactive, one-step-at-a-time agent behavior for a genuinely complex, multi-step task, missing the opportunity to have the agent's overall plan reviewed or revised before fully committing to execution.",
+  },
+  {
+    title: "Human-in-the-loop workflows",
+    body: "Not every AI-driven action should happen fully autonomously, especially one that's costly, hard to reverse, or genuinely high-stakes - a human-in-the-loop workflow has the AI system handle everything up to a specific decision point, then pause and require explicit human review or approval before actually taking that final, consequential action. A customer refund agent might autonomously investigate a request, gather the relevant facts, and draft a recommended decision, but require an actual human to approve it before the refund is genuinely issued - combining the genuine efficiency of AI-assisted investigation with the accountability and judgment a human review step specifically provides for the part that actually matters most.",
+    altExplain: "Human-in-the-loop has AI handle everything up to a specific decision point, then pause for explicit human review before a costly, hard-to-reverse, or high-stakes action actually happens - combining AI efficiency for investigation with human accountability for the consequential decision itself.",
+    visual: null,
+    keyTakeaway: "The right place for a human checkpoint is specifically at the costly, hard-to-reverse, or high-stakes decision point - not necessarily at every single step, which would eliminate most of the efficiency gain of using AI in the first place.",
+    commonMistake: "Either making every single AI-driven step fully autonomous with no human checkpoint at all, or requiring human approval at every single step regardless of stakes - the useful middle ground is a deliberate checkpoint specifically at the genuinely consequential decision point.",
+  },
+  {
+    title: "Observability for AI applications",
+    body: "Debugging why an AI feature produced a specific output requires visibility into the actual full chain of what happened - which prompt was sent (after all templating and variable substitution), which model responded, what tools were called with what arguments, and what each one returned - not just the final visible output shown to the user. Tracing tools built specifically for AI applications capture this full chain for every single request, making it possible to actually answer 'why did this specific response happen' after the fact, rather than trying to reproduce a complex multi-step, multi-call interaction from scratch based on nothing but the end result a user reported as wrong.",
+    altExplain: "Debugging an AI feature needs visibility into the full chain - the actual prompt sent, which model responded, what tools were called with what arguments - not just the final output. AI-specific tracing tools capture this per-request, making it possible to answer 'why did this happen' after the fact.",
+    visual: null,
+    keyTakeaway: "The real debugging need is the full chain - actual prompt, model response, tool calls and their results - not just the final output, since a wrong final result gives almost no information on its own about which specific step actually caused it.",
+    commonMistake: "Only logging an AI feature's final output for debugging purposes, without capturing the actual prompt sent, intermediate tool calls, or model responses along the way - leaves genuinely no way to diagnose which specific step in a multi-step chain actually went wrong.",
+  },
+  {
+    title: "Prompt injection defense in depth",
+    body: "Prompt injection (introduced at the entry level of this course) is a genuinely difficult problem to fully solve with any single defense - a determined, creative attacker will often eventually find a way around any one specific safeguard on its own. Defense in depth means layering several distinct safeguards together rather than relying on just one: filtering and validating suspicious input patterns, keeping untrusted content (like a user's own input, or a retrieved document in a RAG system) clearly separated from trusted system instructions wherever the underlying API structure allows it, constraining what a model's tools can actually do even if it's successfully manipulated into requesting something it shouldn't (limiting a tool's blast radius directly, rather than trusting the model's own judgment alone to prevent misuse), and monitoring for unusual output patterns that might indicate a successful injection went undetected by the earlier layers.",
+    altExplain: "Prompt injection is hard to fully solve with any single defense. Defense in depth layers several safeguards: input filtering, separating untrusted content from trusted instructions, limiting what tools can actually do even if manipulated, and monitoring for unusual output patterns.",
+    visual: null,
+    keyTakeaway: "No single defense against prompt injection is likely fully sufficient on its own - layering several distinct, independent safeguards together is what actually provides meaningful protection against a genuinely determined attacker.",
+    commonMistake: "Relying on a single defense (like a well-written system prompt telling the model to ignore injection attempts) as if it were sufficient on its own, rather than layering multiple independent safeguards that don't all depend on the model's own judgment holding up perfectly.",
+  },
+  {
+    title: "Cheatsheet: Advanced track",
+    body: "A quick reference for the concepts introduced in this track - bookmark this lesson and come back to it any time you need a quick reminder, rather than re-reading full lessons.",
+    altExplain: "This lesson is just a summary table of what you've already learned in this track - nothing new to learn here.",
+    visual: null,
+    isCheatsheet: true,
+    refTable: [
+      { syntax: "Multi-agent systems", desc: "Specialized agents working together - a real tradeoff of specialization against coordination overhead and harder debugging.", example: "Researcher, writer, editor agents" },
+      { syntax: "Structured planning", desc: "An explicit upfront multi-step plan, checkable/revisable, rather than purely reactive one-step-at-a-time behavior.", example: "Plan the whole sequence before executing any of it" },
+      { syntax: "Human-in-the-loop", desc: "A deliberate human checkpoint specifically at costly, hard-to-reverse, or high-stakes decisions - not every single step.", example: "AI investigates, a human approves the final action" },
+      { syntax: "AI-specific tracing/observability", desc: "Captures the full chain (prompt, model response, tool calls) - not just the final output - to diagnose failures.", example: "Answering 'why did this specific response happen'" },
+      { syntax: "Defense in depth against prompt injection", desc: "Layer multiple independent safeguards - no single defense is likely sufficient on its own.", example: "Input filtering + separation + tool limits + monitoring" },
+    ],
+  },
+];
+
+const AIENG_PRO_QUIZ_BANK = {
+  basic: [
+    { q: "When is chain-of-thought prompting most useful?", options: ["For every task, regardless of complexity", "For tasks involving genuine multi-step reasoning, like math or logic", "Only for creative writing tasks", "It never actually improves accuracy"], correct: 1 },
+    { q: "Why version prompts rather than editing them directly in application code?", options: ["Versioning is unnecessary overhead", "It allows tracked history and testing an old vs new version side by side before committing", "It makes prompts run faster", "It removes the need for testing entirely"], correct: 1 },
+    { q: "How should a production application handle an LLM API rate limit error?", options: ["Immediately give up on the feature entirely", "Retry with exponential backoff, and have a sensible fallback if it's genuinely unavailable", "Retry immediately and repeatedly with no delay", "Ignore the error and show nothing to the user"], correct: 1 },
+    { q: "Why must a chat application resend conversation history with every message?", options: ["It doesn't need to, the model remembers", "The model has no memory between separate API calls - each request is independent unless history is explicitly included", "This is only true for very short conversations", "History only needs to be sent once at the start"], correct: 1 },
+    { q: "Why might an application use multiple different models for different tasks?", options: ["It's always simpler to use just one model", "Different models have different strengths, and matching task complexity to an appropriately capable model is often more cost-effective", "Using multiple models is required by every LLM API", "This only matters for very large applications"], correct: 1 },
+  ],
+  intermediate: [
+    { q: "What genuinely separates an agent from a single function-calling exchange?", options: ["Nothing, they're the same thing", "The repeated reason-act-observe loop, iterating based on observed results until a goal is satisfied", "Agents never use tools", "Agents only work with a single model"], correct: 1 },
+    { q: "Why break a complex AI task into distinct workflow steps?", options: ["It always makes the task slower", "It makes debugging far more tractable - identifying which specific step failed, rather than untangling one giant prompt", "Multi-step workflows are required by all LLM APIs", "This only matters for very simple tasks"], correct: 1 },
+    { q: "What is long-term memory for an agent, practically speaking?", options: ["Just a longer context window", "Information stored externally and retrieved selectively when relevant - essentially RAG applied to a user's own history", "The model's own training data", "Something that requires no external storage at all"], correct: 1 },
+    { q: "What does an orchestration framework help manage?", options: ["A single isolated LLM call", "A multi-call pipeline - passing output between steps and handling errors at individual steps", "Only the user interface of an application", "Database backups"], correct: 1 },
+    { q: "What's the goal of integrating AI feature evaluation into CI?", options: ["To slow down deployment on purpose", "To catch regressions automatically on every code change, the same protection regular unit tests already provide", "CI integration isn't useful for AI features", "To replace the need for evaluation entirely"], correct: 1 },
+  ],
+  advanced: [
+    { q: "What's the real cost of a multi-agent system compared to a single agent?", options: ["There is no real cost", "Coordination overhead and harder debugging across the handoffs between agents", "Multi-agent systems are always simpler", "They can't use tools at all"], correct: 1 },
+    { q: "What's an advantage of structured, upfront planning over purely reactive step-by-step agent behavior?", options: ["It's always faster to execute", "The plan can be checked or revised before or during execution, rather than only reacting one step at a time with no broader view", "It removes the need for any tools", "It guarantees the task will succeed"], correct: 1 },
+    { q: "Where should a human-in-the-loop checkpoint typically go?", options: ["At every single step, regardless of stakes", "Specifically at the costly, hard-to-reverse, or high-stakes decision point", "Nowhere, full autonomy is always better", "Only at the very end of a multi-year project"], correct: 1 },
+    { q: "What does AI-specific observability/tracing capture that a simple output log doesn't?", options: ["Nothing extra", "The full chain - actual prompts sent, model responses, and tool calls with their results", "Only the final user-facing output", "Just the total cost of a request"], correct: 1 },
+    { q: "Why does defense against prompt injection need multiple layers?", options: ["A single well-written system prompt is always fully sufficient", "No single defense is likely fully sufficient against a determined attacker - layering independent safeguards provides real protection", "Prompt injection isn't a real risk", "Multiple layers are only needed for very large applications"], correct: 1 },
+  ],
+};
